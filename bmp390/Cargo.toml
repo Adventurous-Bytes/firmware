@@ -1,0 +1,34 @@
+[package]
+name = "bmp390"
+version = "0.0.1"
+edition = "2021"
+authors = ["Adam Sasine <adam.sasine@gmail.com>"]
+description = "Asynchronous driver for the BMP390 pressure sensor"
+homepage = "https://github.com/asasine/bmp390"
+repository = "https://github.com/asasine/bmp390"
+license = "MIT"
+keywords = ["embedded-hal", "async", "pressure", "sensor"]
+categories = ["aerospace", "embedded", "hardware-support", "no-std"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+embassy-time = ["dep:embassy-time"]
+sync = ["dep:embedded-hal"]
+
+[dependencies]
+defmt = { workspace = true }
+embedded-hal = { workspace = true, optional = true }
+embedded-hal-async = { workspace = true }
+embassy-time = { workspace = true, optional = true }
+libm = { workspace = true }
+uom = { workspace = true, default-features = false, features = ["f32", "si", "autoconvert"] }
+
+[dev-dependencies]
+clap = { workspace = true, features = ["derive"] }
+defmt = { workspace = true, features = ["unstable-test"] }
+embedded-hal-mock = { workspace = true, default-features = false, features = ["eh1", "embedded-hal-async"] }
+linux-embedded-hal = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread"] }

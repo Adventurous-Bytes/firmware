@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+members = ["bmp390"]
+
+[workspace.dependencies]
+defmt = "0.3.8"
+embedded-hal-async = "1.0.0"
+embedded-hal = { version = "1.0.0"}
+embassy-time = { version = "0.4.0" }
+libm = "0.2.8"
+uom = { version = "0.36.0", default-features = false, features = [
+    "f32",
+    "si",
+    "autoconvert",
+] }
+
+clap = { version = "4.5.26", features = ["derive"] }
+embedded-hal-mock = { version = "0.11.0", default-features = false, features = [
+    "eh1",
+    "embedded-hal-async",
+] }
+linux-embedded-hal = "0.4.0"
+tokio = { version = "1.37.0", features = ["macros", "rt"] }
