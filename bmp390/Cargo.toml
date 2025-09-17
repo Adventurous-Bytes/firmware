@@ -29,6 +29,7 @@ uom = { workspace = true, default-features = false, features = ["f32", "si", "au
 [dev-dependencies]
 clap = { workspace = true, features = ["derive"] }
 defmt = { workspace = true, features = ["unstable-test"] }
+embedded-hal = { workspace = true }
 embedded-hal-mock = { workspace = true, default-features = false, features = ["eh1", "embedded-hal-async"] }
 linux-embedded-hal = { workspace = true }
-tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread"] }
+tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread", "time"] }
