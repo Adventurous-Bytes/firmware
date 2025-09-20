@@ -62,3 +62,25 @@ install-arm-toolchain:
 # Build for pi ARM target
 build-pi:
     cargo build --target armv7-unknown-linux-gnueabihf --release
+
+# Enable interfaces on a remote Raspberry Pi via SSH
+enable_interfaces user_at_host:
+    #!/bin/bash
+    ssh -t {{user_at_host}} << 'EOF'
+    #spi
+    sudo raspi-config nonint set_config_var dtparam=spi on /boot/firmware/config.txt # Enable SPI
+
+    # Ensure dtoverlay=spi0-0cs is set in /boot/firmware/config.txt without altering dtoverlay=vc4-kms-v3d or dtparam=uart0
+    sudo sed -i -e '/^\s*#\?\s*dtoverlay\s*=\s*vc4-kms-v3d/! s/^\s*#\?\s*(dtoverlay|dtparam\s*=\s*uart0)\s*=.*/dtoverlay=spi0-0cs/' /boot/firmware/config.txt
+
+    # Insert dtoverlay=spi0-0cs after dtparam=spi=on if not already present
+    if ! sudo grep -q '^\s*dtoverlay=spi0-0cs' /boot/firmware/config.txt; then
+        sudo sed -i '/^\s*dtparam=spi=on/a dtoverlay=spi0-0cs' /boot/firmware/config.txt
+    fi
+    #I2C
+    sudo raspi-config nonint set_config_var dtparam=i2c_arm on /boot/firmware/config.txt # Enable i2c_arm
+
+    # do_serial
+    sudo raspi-config nonint do_serial_hw 0 # Enable Serial Port (enable_uart=1)
+    sudo raspi-config nonint do_serial_cons 1 # Disable Serial Console
+EOF

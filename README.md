@@ -31,35 +31,27 @@ This sets up the ARM cross-compilation toolchain for building firmware that runs
 ### Basic Commands
 
 ```bash
-# Build for host architecture
-just build
-
 # Build for ARM (Raspberry Pi/embedded Linux)
 just build-pi
-
-# Build and compile tests for ARM (cannot run on macOS)
-just test
-
-# Build all tests for ARM target
-just test-pi
 
 # Quick ping test
 just ping
 ```
 
-### Setup Commands
+### Cross Compilation Setup Commands
 
+*Build environment.* Add ARM target to Rust.
 ```bash
 # Add ARM target to Rust
 just configure
+```
 
+*Toolchain.* Install ARM cross-compilation toolchain.
+```bash
 # Install ARM cross-compilation toolchain (macOS)
 just install-arm-toolchain
 ```
 
-## Cross-Compilation Setup
-
-### macOS
 
 The `just install-arm-toolchain` command automatically:
 - Installs ARM GCC toolchain via Homebrew
@@ -74,18 +66,20 @@ Requirements:
 
 Cross-compilation setup for other platforms is not currently automated. You'll need to manually install the appropriate cross-compilation toolchain for your system.
 
-## Project Structure
 
+## Pi2w Configuration
+
+### Enable Interfaces
+
+On a remote Raspberry Pi, you can enable the necessary interfaces by running:
+
+```bash
+just enable_interfaces user@hostname
 ```
-firmware/
-├── bmp390/                 # BMP390 sensor driver
-│   ├── src/               # Library source code
-│   ├── examples/          # Usage examples
-│   └── Cargo.toml         # Package configuration
-├── scripts/
-│   └── get_just.sh        # Just command runner setup
-├── .cargo/
-│   └── config.toml        # Cross-compilation configuration (created by justfile)
-├── justfile               # Command recipes
-└── README.md              # This file
+
+This command will connect to the remote device via SSH and run a script to enable SPI, I2C, and UART. You will be prompted for the SSH password.
+
+### Install Meshtastic
+```bash
+
 ```
