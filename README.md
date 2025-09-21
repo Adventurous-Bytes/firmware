@@ -80,6 +80,16 @@ just enable_interfaces user@hostname
 This command will connect to the remote device via SSH and run a script to enable SPI, I2C, and UART. You will be prompted for the SSH password.
 
 ### Install Meshtastic
-```bash
 
+To install and configure Meshtastic on a remote device, run the following command:
+
+```bash
+just install_meshtastic user@hostname
 ```
+
+This command will connect to the remote device via SSH and:
+- Install the Meshtastic daemon (`meshtasticd`).
+- Configure it for use with an E22-900M30S LoRa module.
+- Restart the `meshtasticd` service.
+
+You will be prompted for the SSH password.

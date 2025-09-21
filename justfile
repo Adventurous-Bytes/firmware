@@ -65,22 +65,34 @@ build-pi:
 
 # Enable interfaces on a remote Raspberry Pi via SSH
 enable_interfaces user_at_host:
-    #!/bin/bash
-    ssh -t {{user_at_host}} << 'EOF'
-    #spi
-    sudo raspi-config nonint set_config_var dtparam=spi on /boot/firmware/config.txt # Enable SPI
+    #!/usr/bin/env bash
+    ssh -t {{user_at_host}} "sudo -v && \
+                             echo 'Enabling hardware interfaces (SPI, I2C, UART)...' && \
+                             sudo raspi-config nonint set_config_var dtparam=spi on /boot/firmware/config.txt && \
+                             sudo sed -i -e '/^\s*#\?\s*dtoverlay\s*=\s*vc4-kms-v3d/! s/^\s*#\?\s*(dtoverlay|dtparam\s*=\s*uart0)\s*=.*/dtoverlay=spi0-0cs/' /boot/firmware/config.txt && \
+                             if ! sudo grep -q '^\s*dtoverlay=spi0-0cs' /boot/firmware/config.txt; then sudo sed -i '/^\s*dtparam=spi=on/a dtoverlay=spi0-0cs' /boot/firmware/config.txt; fi && \
+                             sudo raspi-config nonint set_config_var dtparam=i2c_arm on /boot/firmware/config.txt && \
+                             sudo raspi-config nonint do_serial_hw 0 && \
+                             sudo raspi-config nonint do_serial_cons 1 && \
+                             echo 'Interfaces enabled. Rebooting now...' && \
+                             sudo reboot"
 
-    # Ensure dtoverlay=spi0-0cs is set in /boot/firmware/config.txt without altering dtoverlay=vc4-kms-v3d or dtparam=uart0
-    sudo sed -i -e '/^\s*#\?\s*dtoverlay\s*=\s*vc4-kms-v3d/! s/^\s*#\?\s*(dtoverlay|dtparam\s*=\s*uart0)\s*=.*/dtoverlay=spi0-0cs/' /boot/firmware/config.txt
+# Install and configure Meshtastic on a remote device
+install_meshtastic user_at_host:
+    #!/usr/bin/env bash
+    # Step 1: Install packages and backup old config
+    echo "Installing Meshtastic and backing up existing config on {{user_at_host}}..."
+    ssh -t {{user_at_host}} "sudo -v && \
+                             echo 'deb http://download.opensuse.org/repositories/network:/Meshtastic:/beta/Raspbian_12/ /' | sudo tee /etc/apt/sources.list.d/network:Meshtastic:beta.list && \
+                             curl -fsSL https://download.opensuse.org/repositories/network:Meshtastic:/beta/Raspbian_12/Release.key | sudo gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/network_Meshtastic_beta.gpg > /dev/null && \
+                             sudo apt update && \
+                             sudo apt install -y meshtasticd && \
+                             if [ -f /etc/meshtasticd/config.yaml ]; then sudo mv /etc/meshtasticd/config.yaml /etc/meshtasticd/config.yaml.bak; fi"
 
-    # Insert dtoverlay=spi0-0cs after dtparam=spi=on if not already present
-    if ! sudo grep -q '^\s*dtoverlay=spi0-0cs' /boot/firmware/config.txt; then
-        sudo sed -i '/^\s*dtparam=spi=on/a dtoverlay=spi0-0cs' /boot/firmware/config.txt
-    fi
-    #I2C
-    sudo raspi-config nonint set_config_var dtparam=i2c_arm on /boot/firmware/config.txt # Enable i2c_arm
+    # Step 2: Upload the new configuration file
+    echo "Uploading new configuration from meshtastic_config.yaml..."
+    cat meshtastic_config.yaml | ssh {{user_at_host}} "sudo tee /etc/meshtasticd/config.yaml > /dev/null"
 
-    # do_serial
-    sudo raspi-config nonint do_serial_hw 0 # Enable Serial Port (enable_uart=1)
-    sudo raspi-config nonint do_serial_cons 1 # Disable Serial Console
-EOF
+    # Step 3: Restart the Meshtastic service
+    echo "Restarting Meshtastic service on {{user_at_host}}..."
+    ssh -t {{user_at_host}} "sudo systemctl restart meshtasticd && echo '✅ Meshtastic installation and configuration complete.'"

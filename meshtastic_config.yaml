@@ -1,0 +1,29 @@
+# This is the canonical configuration for the E22-900M30S module on a Raspberry Pi.
+# It is maintained locally and uploaded to the remote device by the `install_meshtastic` just command.
+
+Lora:
+  Module: sx1262
+  Region: US
+  CS: 8
+  IRQ: 22
+  Busy: 20
+  Reset: 21
+  TXen: 24
+  RXen: 25
+  DIO3_TCXO_VOLTAGE: true
+
+GPS:
+  SerialPath: /dev/ttyS0
+
+I2C:
+  I2CDevice: /dev/i2c-1
+
+Logging:
+  LogLevel: info
+
+Webserver:
+  Port: 8001
+  RootPath: /usr/share/meshtasticd/web
+
+General:
+  MaxNodes: 200
