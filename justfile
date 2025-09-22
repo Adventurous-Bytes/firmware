@@ -69,13 +69,17 @@ enable_interfaces user_at_host:
     ssh -t {{user_at_host}} "sudo -v && \
                              echo 'Enabling hardware interfaces (SPI, I2C, UART)...' && \
                              sudo raspi-config nonint set_config_var dtparam=spi on /boot/firmware/config.txt && \
-                             sudo sed -i -e '/^\s*#\?\s*dtoverlay\s*=\s*vc4-kms-v3d/! s/^\s*#\?\s*(dtoverlay|dtparam\s*=\s*uart0)\s*=.*/dtoverlay=spi0-0cs/' /boot/firmware/config.txt && \
-                             if ! sudo grep -q '^\s*dtoverlay=spi0-0cs' /boot/firmware/config.txt; then sudo sed -i '/^\s*dtparam=spi=on/a dtoverlay=spi0-0cs' /boot/firmware/config.txt; fi && \
                              sudo raspi-config nonint set_config_var dtparam=i2c_arm on /boot/firmware/config.txt && \
                              sudo raspi-config nonint do_serial_hw 0 && \
                              sudo raspi-config nonint do_serial_cons 1 && \
+                             echo 'dtoverlay=spi0-0cs,no_cs' | sudo tee -a /boot/firmware/config.txt > /dev/null && \
                              echo 'Interfaces enabled. Rebooting now...' && \
                              sudo reboot"
+
+# Configure wireless networks on a remote device using .wifi file
+configure_wifi user_at_host:
+    ./scripts/configure_wifi.sh {{user_at_host}}
+
 
 # Install and configure Meshtastic on a remote device
 install_meshtastic user_at_host:
@@ -96,3 +100,23 @@ install_meshtastic user_at_host:
     # Step 3: Restart the Meshtastic service
     echo "Restarting Meshtastic service on {{user_at_host}}..."
     ssh -t {{user_at_host}} "sudo systemctl restart meshtasticd && echo '✅ Meshtastic installation and configuration complete.'"
+
+
+# Complete device setup - enables interfaces, configures WiFi, and installs Meshtastic
+setup_device user_at_host:
+    echo "🚀 Starting complete device setup for {{user_at_host}}..."
+    echo ""
+    echo "📡 Step 1/3: Enabling hardware interfaces (SPI, I2C, UART)..."
+    enable_interfaces {{user_at_host}}
+    echo ""
+    echo "📶 Step 2/3: Configuring WiFi networks..."
+    configure_wifi {{user_at_host}}
+    echo ""
+    echo "📡 Step 3/3: Installing and configuring Meshtastic..."
+    install_meshtastic {{user_at_host}}
+    echo ""
+    echo "✅ Complete device setup finished!"
+    echo "Your device {{user_at_host}} is now fully configured with:"
+    echo "  • Hardware interfaces enabled (SPI, I2C, UART)"
+    echo "  • WiFi networks configured"
+    echo "  • Meshtastic installed and configured"

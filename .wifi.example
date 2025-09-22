@@ -1,0 +1,10 @@
+# WiFi Configuration File
+# Copy this file to .wifi and configure your networks
+# Format: NETWORK_NAME=SSID,PASSWORD,SECURITY
+# Security options: OPEN, WEP, WPA, WPA2, WPA3
+
+# Example networks (uncomment and modify as needed)
+home=MyHomeNetwork,myhomepassword123,WPA2
+office=OfficeWiFi,officepass456,WPA2
+guest=GuestNetwork,guestpass789,WPA2
+public=FreeWiFi,,OPEN
