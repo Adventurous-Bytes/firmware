@@ -46,14 +46,14 @@ add_wifi_connection() {
     local ssid="$2"
     local password="$3"
     local security="$4"
-    
+
     echo "Processing network: $network_name ($ssid)"
-    
+
     if [ -z "$ssid" ]; then
         echo "⚠️  Warning: SSID not specified for $network_name, skipping"
         return
     fi
-    
+
     # Check if connection already exists (by SSID, not connection name)
     EXISTING_CONNECTION=$(nmcli connection show | grep "wifi" | while read name uuid type device; do
         if nmcli connection show "$name" | grep -q "802-11-wireless.ssid.*$ssid"; then
@@ -61,10 +61,10 @@ add_wifi_connection() {
             break
         fi
     done)
-    
+
     if [ -n "$EXISTING_CONNECTION" ]; then
         echo "  ⚠️  Connection already exists ($EXISTING_CONNECTION), updating..."
-        
+
         # Update existing connection
         if [ "$security" = "OPEN" ]; then
             nmcli connection modify "$EXISTING_CONNECTION" wifi-sec.key-mgmt none
@@ -92,7 +92,7 @@ add_wifi_connection() {
         fi
     else
         echo "  ➕ Creating new connection..."
-        
+
         # Create new NetworkManager connection using nmcli
         if [ "$security" = "OPEN" ]; then
             nmcli connection add type wifi con-name "$ssid" ifname wlan0 ssid "$ssid" wifi-sec.key-mgmt none
@@ -113,7 +113,7 @@ add_wifi_connection() {
             fi
         fi
     fi
-    
+
     # Set connection to auto-connect
     if [ -n "$EXISTING_CONNECTION" ]; then
         nmcli connection modify "$EXISTING_CONNECTION" connection.autoconnect yes
@@ -130,28 +130,28 @@ while IFS='=' read -r network_name network_config; do
     if [[ -z "$network_name" || "$network_name" =~ ^[[:space:]]*# ]]; then
         continue
     fi
-    
+
     # Parse network configuration: SSID,PASSWORD,SECURITY
     IFS=',' read -r ssid password security <<< "$network_config"
-    
+
     # Trim whitespace
     network_name=$(echo "$network_name" | xargs)
     ssid=$(echo "$ssid" | xargs)
     password=$(echo "$password" | xargs)
     security=$(echo "$security" | xargs)
-    
+
     # Set default security if not specified
     if [ -z "$security" ]; then
         security="WPA2"
     fi
-    
+
     echo "Adding network: $network_name"
     echo "  SSID: $ssid"
     echo "  Security: $security"
-    
+
     # Add function call to script
     echo "add_wifi_connection '$network_name' '$ssid' '$password' '$security'" >> "$TEMP_SCRIPT"
-    
+
 done < .wifi
 
 # Execute the script on the remote host

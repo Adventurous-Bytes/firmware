@@ -1,0 +1,16 @@
+[package]
+name = "horus-embedded"
+version = "0.1.0"
+edition = "2024"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[dependencies]
+panic-halt = "0.2.0"
+rp235x-hal = {version="0.3.0", features = ["binary-info", "critical-section-impl", "rt", "defmt"]}
+embedded-hal = "1.0.0"
+cortex-m-rt = "0.7.3"
